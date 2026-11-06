@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+service Adder {
+    rpc add (CalcRequest) returns (CalcResponse) {}
+    rpc sub (CalcRequest) returns (CalcResponse) {}
+}
+
+service Multiplier {
+    rpc mul (CalcRequest) returns (CalcResponse) {}
+    rpc div (CalcRequest) returns (CalcResponse) {}
+}
+
+message CalcRequest {
+    double a = 1;
+    double b = 2;
+}
+
+message CalcResponse {
+    double ans = 1;
+}
