@@ -19,7 +19,7 @@ def make_handler(operations: dict):
                     resp = {'ans': fn(float(req['a']), float(req['b']))}
                 except KeyError as e:
                     resp = {'error': f'campo/operação inválida: {e}'}
-                except (ValueError) as e:
+                except (ValueError, ZeroDivisionError) as e:
                     resp = {'error': str(e)}
                 self.wfile.write((json.dumps(resp) + '\n').encode())
 
