@@ -1,19 +1,33 @@
 import grpc
-from stub.calculator_pb2 import CalcRequest, CalcResponse
+from stub.calculator_pb2 import CalcRequest
 from stub.calculator_pb2_grpc import AdderStub, MultiplierStub
 
 ADDER_PORT = 3270
 MULTIPLIER_PORT = 3271
 
-def calc(port: int, stub_fn_getter, **kwargs) -> float:
-    Stub = AdderStub if port == ADDER_PORT else MultiplierStub
+def calc(op: str, a: float, b: float) -> float:
+    if op in ('add', 'sub'):
+        Stub = AdderStub
+        port = ADDER_PORT
+    else:
+        Stub = MultiplierStub
+        port = MULTIPLIER_PORT
 
     with grpc.insecure_channel(f'localhost:{port}') as channel:
-        stub = Stub(channel)
-        stub_fn = stub_fn_getter(stub)
-        response: CalcResponse = stub_fn(CalcRequest(**kwargs))
+        stub_instance = Stub(channel)
+        request = CalcRequest(a=a, b=b)
 
-    return response.ans   
+        match op:
+            case 'add':
+                response = stub_instance.add(request)
+            case 'sub':
+                response = stub_instance.sub(request)
+            case 'mul':
+                response = stub_instance.mul(request)
+            case 'div':
+                response = stub_instance.div(request)
+
+    return response.ans
 
 if __name__ == '__main__':
     print("======== CALCULADORA DISTRIBUÍDA ========")
@@ -37,16 +51,14 @@ if __name__ == '__main__':
         b = float(input("Segundo valor  : "))
 
         ans = 'UNDEFINED'
-        param = { 'a': a, 'b': b }
         if (operacao == 1):
-            ans = calc(ADDER_PORT, lambda stub: stub.add, **param)
+            ans = calc('add', a, b)
         elif (operacao == 2):
-            ans = calc(ADDER_PORT, lambda stub: stub.sub, **param)
+            ans = calc('sub', a, b)
         elif (operacao == 3):
-            ans = calc(MULTIPLIER_PORT, lambda stub: stub.mul, **param)
+            ans = calc('mul', a, b)
         elif (operacao == 4):
-            ans = calc(MULTIPLIER_PORT, lambda stub: stub.div, **param)
+            ans = calc('div', a, b)
 
         print(f"RESULTADO: {ans}\n")
         i+=1
-        
